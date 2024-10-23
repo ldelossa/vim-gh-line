@@ -78,7 +78,7 @@ func! s:gh_exec_cmd(url)
     call system(l:finalCmd)
 endfun
 
-func! s:gh_line(action, force_interactive) range
+func! s:gh_line(action, force_interactive, clipboard) range
     " Get Line Number/s
     let lineNum = line('.')
     let fileName = resolve(expand('%:t'))
@@ -153,6 +153,12 @@ func! s:gh_line(action, force_interactive) range
             \ 'one of the supported git hosting environments: ' .
             \ 'GitHub, GitLab, BitBucket, SourceHut, Cgit.'
     endif
+
+	if a:clipboard == 1
+		call setreg('+', url)
+		return
+	endif
+
     call s:gh_exec_cmd(url)
 endfun
 
@@ -451,14 +457,17 @@ endfunc
 
 noremap <silent> <Plug>(gh-repo) :call <SID>gh_repo()<CR>
 
-command! -range GH <line1>,<line2>call <SID>gh_line('blob', g:gh_always_interactive)
-noremap <silent> <Plug>(gh-line) :call <SID>gh_line('blob', g:gh_always_interactive)<CR>
+command! -range GH <line1>,<line2>call <SID>gh_line('blob', g:gh_always_interactive, 0)
+noremap <silent> <Plug>(gh-line) :call <SID>gh_line('blob', g:gh_always_interactive, 0)<CR>
 
-command! -range GB <line1>,<line2>call <SID>gh_line('blame', g:gh_always_interactive)
-noremap <silent> <Plug>(gh-line-blame) :call <SID>gh_line('blame', g:gh_always_interactive)<CR>
+command! -range GB <line1>,<line2>call <SID>gh_line('blame', g:gh_always_interactive, 0)
+noremap <silent> <Plug>(gh-line-blame) :call <SID>gh_line('blame', g:gh_always_interactive, 0)<CR>
 
-command! -range GHInteractive <line1>,<line2>call <SID>gh_line('blob', 1)
-command! -range GBInteractive <line1>,<line2>call <SID>gh_line('blame', 1)
+command! -range GHInteractive <line1>,<line2>call <SID>gh_line('blob', 1, 0)
+command! -range GBInteractive <line1>,<line2>call <SID>gh_line('blame', 1, 0)
+
+command! -range GHClipboard <line1>,<line2>call <SID>gh_line('blob', g:gh_always_interactive, 1)
+command! -range GHInteractiveClipboard <line1>,<line2>call <SID>gh_line('blob', 1, 1)
 
 if !hasmapto('<Plug>(gh-repo)') && exists('g:gh_repo_map')
     exe "map" g:gh_repo_map "<Plug>(gh-repo)"
